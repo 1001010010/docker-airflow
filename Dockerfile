@@ -18,12 +18,15 @@ RUN mkdir ~/.pip/ && touch ~/.pip/pip.conf && echo "[global]">> ~/.pip/pip.conf 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
+COPY apache-airflow-2.0.0.dev0+incubating.tar.gz /apache-airflow-2.0.0.dev0+incubating.tar.gz
+
 # Airflow
 ARG AIRFLOW_VERSION=1.10.1
 ARG AIRFLOW_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_GPL_UNIDECODE yes
+ENV AIRFLOW_HOME=${AIRFLOW_HOME}
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -35,11 +38,13 @@ ENV LC_MESSAGES en_US.UTF-8
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
+        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
         libpq-dev \
+        libldap2-dev \
         git \
     ' \
     && apt-get update -yqq \
@@ -63,8 +68,10 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install -e https://github.com/yujiantao/incubator-airflow.git \
+    && pip install /apache-airflow-2.0.0.dev0+incubating.tar.gz \
     && pip install 'redis>=2.10.5,<3' \
+    && pip install flask-appbuilder==1.11.1 \
+    && pip install flask-login=0.3 \
     && pip install python-ldap \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
@@ -80,6 +87,7 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY config/webserver_config.py ${AIRFLOW_HOME}/webserver_config.py
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 

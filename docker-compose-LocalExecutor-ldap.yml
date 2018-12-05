@@ -1,0 +1,42 @@
+version: '2.1'
+services:
+    openldap:
+        image: shareit/openldap:1.2.2
+    
+    phpldapadmin: 
+        image: shareit/phpldapadmin:0.7.2
+        depends_on:
+           - openldap 
+        ports:
+           - "6443:443"
+        environment:
+           - PHPLDAPADMIN_LDAP_HOSTS=openldap
+
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+
+    webserver:
+        image: shareit/docker-airflow-ldap:latest
+        restart: always
+        depends_on:
+            - openldap
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
