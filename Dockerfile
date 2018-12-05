@@ -18,7 +18,7 @@ RUN mkdir ~/.pip/ && touch ~/.pip/pip.conf && echo "[global]">> ~/.pip/pip.conf 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
-COPY apache-airflow-2.0.0.dev0+incubating.tar.gz /apache-airflow-2.0.0.dev0+incubating.tar.gz
+#COPY apache-airflow-2.0.0.dev0+incubating.tar.gz /apache-airflow-2.0.0.dev0+incubating.tar.gz
 
 # Airflow
 ARG AIRFLOW_VERSION=1.10.1
@@ -68,7 +68,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install /apache-airflow-2.0.0.dev0+incubating.tar.gz \
+    && pip install -e git+https://github.com/yujiantao/incubator-airflow.git\#egg\=apache-airflow[crypto,celery,postgres,hive,jdbc,mysql] \
     && pip install 'redis>=2.10.5,<3' \
     && pip install python-ldap \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
