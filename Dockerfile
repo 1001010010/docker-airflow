@@ -70,8 +70,6 @@ RUN set -ex \
     && pip install pyasn1 \
     && pip install /apache-airflow-2.0.0.dev0+incubating.tar.gz \
     && pip install 'redis>=2.10.5,<3' \
-    && pip install flask-appbuilder==1.11.1 \
-    && pip install flask-login=0.3 \
     && pip install python-ldap \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
